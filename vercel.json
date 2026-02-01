@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/.well-known/agent.json", "destination": "/api/agent" },
+    { "source": "/api/agent", "destination": "/api/agent" },
+    { "source": "/api/jobs", "destination": "/api/jobs" },
+    { "source": "/api/jobs/:path*", "destination": "/api/jobs" },
+    { "source": "/api/stats", "destination": "/api/stats" },
+    { "source": "/api/leaderboard", "destination": "/api/leaderboard" }
+  ]
+}
