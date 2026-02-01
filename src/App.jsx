@@ -560,9 +560,25 @@ function App() {
     
     setLoading(true)
     try {
+      // On-chain winner selection (required if escrow is funded)
       if (escrow?.funded && !escrow?.released) {
         const walletClient = await getWalletClient()
-        if (walletClient) {
+        if (!walletClient) {
+          showToast('Connect wallet to select winner', true)
+          setLoading(false)
+          return
+        }
+        
+        // Check if winner already set on-chain
+        const jobData = await publicClient.readContract({
+          address: CONTRACTS.ESCROW,
+          abi: ESCROW_ABI,
+          functionName: 'getJob',
+          args: [currentJob.id]
+        })
+        const onChainWinner = jobData[2]
+        
+        if (onChainWinner === '0x0000000000000000000000000000000000000000') {
           showToast('Selecting winner on-chain...')
           const tx = await walletClient.writeContract({
             address: CONTRACTS.ESCROW,
@@ -571,8 +587,11 @@ function App() {
             args: [currentJob.id, workerWallet]
           })
           await publicClient.waitForTransactionReceipt({ hash: tx })
+          showToast('Winner set on-chain ✓')
         }
       }
+      
+      // Update API
       const headers = { 'Content-Type': 'application/json' }
       if (token) headers['X-Token'] = token
       if (address) headers['X-Wallet'] = address
